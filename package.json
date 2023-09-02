@@ -6,7 +6,7 @@
   "publisher": "Yasuo-Higano",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Yasuo-Higano/gleam-outliner"
+    "url": "https://github.com/Yasuo-Higano/vscode-gleam-outliner"
   },
   "engines": {
     "vscode": "^1.64.0"

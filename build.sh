@@ -16,4 +16,5 @@ find $src_dir -type f -name "*.beam" -exec cp {} $dst_dir \;
 npm install -g vsce
 npm install
 
-vsce package
+vsce package --baseImagesUrl https://raw.githubusercontent.com/Yasuo-Higano/vscode-gleam-outliner/main/
+

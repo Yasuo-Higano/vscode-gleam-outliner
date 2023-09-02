@@ -2,7 +2,7 @@
 
 This is a VSCode extension for the Gleam language that supports code outlining. The extension allows you to view the structure of your Gleam code in an outline view, making it easier to navigate and understand your code.
 
-![Example of Outline View](image/screen1.jpg)
+![Example of Outline View](images/screen1.jpg)
 
 ## Requirements
 
@@ -22,7 +22,7 @@ In addition to VSCode's standard outline view, we also recommend using Outline M
 
 これはGleam言語のVSCode拡張機能で、コードのアウトライン表示をサポートしています。この拡張機能により、Gleamコードの構造をアウトラインビューで確認し、コードの理解やナビゲーションを容易にします。
 
-![アウトライン表示の例](image/screen1.jpg)
+![アウトライン表示の例](images/screen1.jpg)
 
 ## 必要条件
 

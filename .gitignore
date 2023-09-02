@@ -11,3 +11,4 @@ bkup.log
 .tarignore
 .local_bash_history
 .bash_history
+_unused/

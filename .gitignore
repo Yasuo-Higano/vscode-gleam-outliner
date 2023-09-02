@@ -1,0 +1,13 @@
+node_modules/
+erl_crash.dump
+ebin/
+build/
+bkup.log
+*.vsix
+*.log
+*.bak
+.vscode/
+.vscode-test/
+.tarignore
+.local_bash_history
+.bash_history

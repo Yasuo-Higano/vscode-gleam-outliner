@@ -1,0 +1,61 @@
+{
+  "name": "gleam-outliner",
+  "displayName": "Gleam Outliner",
+  "description": "Outline for the Gleam programming language",
+  "version": "0.0.7",
+  "publisher": "Yasuo-Higano",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Yasuo-Higano/gleam-outliner"
+  },
+  "engines": {
+    "vscode": "^1.64.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:gleam",
+    "workspaceContains:**/*.gleam"
+  ],
+  "main": "./extension.js",
+  "icon": "images/icon.png",
+  "contributes": {
+    "languages": [
+      {
+        "id": "gleam",
+        "aliases": [
+          "Gleam",
+          "gleam"
+        ],
+        "extensions": [
+          ".gleam"
+        ],
+        "icon": {
+          "light": "./images/gleam-logo.png",
+          "dark": "./images/gleam-logo.png"
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.2.0",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "14.x",
+    "@types/vscode": "^1.64.0",
+    "@vscode/test-electron": "^2.0.3",
+    "eslint": "^8.6.0",
+    "glob": "^7.2.0",
+    "mocha": "^9.1.3",
+    "typescript": "^4.5.4",
+    "vscode": "^1.1.34"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^8.1.0"
+  }
+}

@@ -1,13 +1,13 @@
 import gleam/io
 import lib/log.{log}
-import lib/untyped.{Untyped, untyped}
-import gleam.{Result}
+import lib/untyped.{untyped}
+import gleam
 
-pub external type Void
+pub type Void
 
-pub external type Atom
+pub type Atom
 
-pub external type Pid
+pub type Pid
 
 pub type Atoms {
   Normal
@@ -57,30 +57,30 @@ pub fn delete_reference(ref: Reference(a)) -> a {
   val
 }
 
-external fn format(fmt: String, param: a) -> String =
-  "io_lib" "format"
+@external(erlang, "io_lib", "format")
+fn format(fmt: String, param: a) -> String
 
-external fn start_link_(a, b, c) -> Result(Pid, err) =
-  "gen_server" "start_link"
+@external(erlang, "gen_server", "start_link")
+fn start_link_(a: a, b: b, c: c) -> Result(Pid, err)
 
-external fn start_(a, b, c) -> Result(Pid, err) =
-  "gen_server" "start"
+@external(erlang, "gen_server", "start")
+fn start_(a: a, b: b, c: c) -> Result(Pid, err)
 
-external fn string_to_atom(str: String) -> Result(Atom, err) =
-  "erlang" "binary_to_atom"
+@external(erlang, "erlang", "binary_to_atom")
+fn string_to_atom(str: String) -> Result(Atom, err)
 
-external fn call(pid: Pid, msg: Msg(t)) -> Result(t, err) =
-  "gen_server" "call"
+@external(erlang, "gen_server", "call")
+fn call(pid: Pid, msg: Msg(t)) -> Result(t, err)
 
-external fn stop(pid: Pid) -> Result(t, err) =
-  "gen_server" "stop"
+@external(erlang, "gen_server", "stop")
+fn stop(pid: Pid) -> Result(t, err)
 
 //external fn cast(pid:Pid, msg:dyn) -> Result(a,b) = "gen_server" "cast"
-external fn tuple_to_list(in: a) -> b =
-  "erlang" "tuple_to_list"
+@external(erlang, "erlang", "tuple_to_list")
+fn tuple_to_list(in: a) -> b
 
-external fn process_flag(Atoms, Bool) -> Void =
-  "erlang" "process_flag"
+@external(erlang, "erlang", "process_flag")
+fn process_flag(a: Atoms, b: Bool) -> Void
 
 fn start_link(val: tval) -> Result(Pid, err) {
   let module_atom = string_to_atom("gleam@reference")

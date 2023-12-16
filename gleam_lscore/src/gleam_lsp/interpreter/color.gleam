@@ -1,14 +1,14 @@
-pub external fn yellow(String) -> String =
-  "color" "yellow"
+@external(erlang, "color", "yellow")
+pub fn yellow(s: String) -> String
 
-pub external fn cyan(String) -> String =
-  "color" "cyan"
+@external(erlang, "color", "cyan")
+pub fn cyan(s: String) -> String
 
-pub external fn green(String) -> String =
-  "color" "green"
+@external(erlang, "color", "green")
+pub fn green(s: String) -> String
 
-pub external fn red(String) -> String =
-  "color" "red"
+@external(erlang, "color", "red")
+pub fn red(s: String) -> String
 
-pub external fn blue(String) -> String =
-  "color" "blue"
+@external(erlang, "color", "blue")
+pub fn blue(s: String) -> String

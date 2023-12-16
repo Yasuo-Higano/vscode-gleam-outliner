@@ -2,7 +2,7 @@
   "name": "gleam-outliner",
   "displayName": "Gleam Outliner",
   "description": "Outline for the Gleam programming language",
-  "version": "0.0.7",
+  "version": "0.1.4",
   "publisher": "Yasuo-Higano",
   "repository": {
     "type": "git",
@@ -15,8 +15,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage:gleam",
-    "workspaceContains:**/*.gleam"
+    "onLanguage:gleam"
   ],
   "main": "./extension.js",
   "icon": "images/icon.png",
@@ -36,7 +35,22 @@
           "dark": "./images/gleam-logo.png"
         }
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Gleam Outliner",
+      "properties": {
+        "gleam_outliner.port": {
+          "type": "integer",
+          "default": 55550,
+          "description": "Port of Gleam Outliner Language Server"
+        },
+        "gleam_outliner.debug_log": {
+          "type": "boolean",
+          "default": false,
+          "description": "debug log to ~/vscode-gleam-outliner.log"
+        }
+      }
+    }
   },
   "scripts": {
     "lint": "eslint .",

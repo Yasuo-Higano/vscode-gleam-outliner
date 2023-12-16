@@ -1,4 +1,4 @@
--module(gleam_lsp).
+-module(gleam_lsp_stdio).
 -compile(export_all).
 
 append_to_file(File, Fmt,Prm) ->

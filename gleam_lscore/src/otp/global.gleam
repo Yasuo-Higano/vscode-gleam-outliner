@@ -1,11 +1,11 @@
-import otp/erlang.{Atom}
+import otp/erlang.{type Atom}
 import sola/exception
 
-pub external fn get2(key: Atom, default_val: a) -> a =
-  "persistent_term" "get"
+@external(erlang, "persistent_term", "get")
+pub fn get2(key: Atom, default_val: a) -> a
 
-pub external fn put(key: Atom, value: a) -> b =
-  "persistent_term" "put"
+@external(erlang, "persistent_term", "put")
+pub fn put(key: Atom, value: a) -> b
 
 pub fn modify(key: Atom, default_value: a, f: fn(a) -> a) -> a {
   let newval = f(get2(key, default_value))

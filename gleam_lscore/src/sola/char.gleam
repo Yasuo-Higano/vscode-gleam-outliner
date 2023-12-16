@@ -1,18 +1,18 @@
-import otp/erlang.{list_to_tuple}
-import gleam/option.{None, Option, Some}
+import otp/erlang
+import gleam/option.{type Option, None, Some}
 import gleam/list
 import lib/log.{log}
 
 pub type Char =
   Int
 
-external type NextCodePointResult
+type NextCodePointResult
 
-external fn unicode_next_codepoint(String) -> Option(#(Int, String)) =
-  "erlang_ffi" "unicode_next_codepoint"
+@external(erlang, "erlang_ffi", "unicode_next_codepoint")
+fn unicode_next_codepoint(s: String) -> Option(#(Int, String))
 
-external fn unicode_characters_to_binary(List(Char)) -> String =
-  "unicode" "characters_to_binary"
+@external(erlang, "unicode", "characters_to_binary")
+fn unicode_characters_to_binary(ls: List(Char)) -> String
 
 fn string_to_list_(src: String, acc: List(Char)) {
   case unicode_next_codepoint(src) {

@@ -1,4 +1,4 @@
-import otp/erlang.{Unit}
+import otp/erlang
 import otp/io
 import gleam
 import lib/untyped.{untyped}
@@ -6,7 +6,7 @@ import lib/log.{log}
 import gleam/list
 import gleam/string
 import lib/pprint.{format}
-import gleam/option.{None, Option, Some}
+import gleam/option
 //import gleam/json.{array, int, null, object, string}
 import gleam/dynamic
 
@@ -25,8 +25,11 @@ pub type Json {
   JNull
 }
 
-external fn to_gleam_str(a) -> String =
-  "ffi_erlang_str" "to_gleam_str"
+@external(erlang, "ffi_erlang_json", "get_nt_p")
+pub fn get_nt_p(j: Json, s: String) -> String
+
+@external(erlang, "ffi_erlang_str", "to_gleam_str")
+pub fn to_gleam_str(a: a) -> String
 
 pub fn encode(jobj: Json) {
   to_gleam_str(enc_(jobj))
@@ -65,8 +68,8 @@ fn enc_(jobj: Json) {
   }
 }
 
-external fn decode_json(String) -> Json =
-  "erlang_ffi" "decode_json"
+@external(erlang, "erlang_ffi", "decode_json")
+fn decode_json(s: String) -> Json
 
 pub fn decode(src: String) -> Json {
   decode_json(src)
@@ -88,13 +91,10 @@ pub fn get(json: Json, key: String) -> Json {
   case json {
     JObject(objs) -> {
       let found =
-        list.find(
-          objs,
-          fn(e) {
-            let JPair(k, v) = e
-            k == key
-          },
-        )
+        list.find(objs, fn(e) {
+          let JPair(k, v) = e
+          k == key
+        })
       case found {
         Ok(JPair(_, val)) -> val
         _ -> JNull

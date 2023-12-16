@@ -1,5 +1,5 @@
 import otp/io
-import otp/erlang.{Atom, Unit, atom_of, float, trunc}
+import otp/erlang.{type Atom, type Unit, atom_of, trunc}
 import otp/global
 import lib/object
 import gleam/order
@@ -11,10 +11,10 @@ import gleam/string
 import gleam/list
 import gleam/map
 import gleam/set
-import gleam/option.{None, Option, Some}
+import gleam/option.{None, Some}
 import gleam/int
 import gleam/float
-import lib/untyped.{Untyped, untyped}
+import lib/untyped.{untyped}
 import otp/file as erl_file
 import sola/exception
 import sola/tuple
@@ -22,19 +22,10 @@ import haxe/sys/io/file
 import gleam_lsp/interpreter/fuzzy_doc_symbolizer
 import gleam_lsp/interpreter/ast
 import gleam_lsp/interpreter/itype.{
-  AtomVal, BinOp, Block, Boolean, Case, CaseClause, Closure, Comment,
-  CompileError, CompilerState, Cond, CondClause, CustomType, DefArg, DefConst,
-  DefCustomType, DefExternalFun, DefExternalType, DefParam, DefTypeAlias, Defun,
-  DiscardName, Env, ErrorMsg, Expected, Expr2, ExternalFun, FloatVal, Fun,
-  FunRef, Funcall, Import, ImportAs, ImportUnqualified, IntVal, Let, ListEx,
-  ListExWithTail, ListTypeUnmatch, MemberAccess, Module, ModulePath, ModuleRef,
-  NOP, Name, NativeFun, NativeFunReturn, NativeSigil, Object, Quote,
-  RecordConstructor, RecordConstructorArg, RecordData, RecordUpdate,
-  RecordUpdateArg, RecordUpdateSpread, Sequence, Set, SigilExpr, SrcInf,
-  StringVal, T, TCustomType, TFloat, TInt, TList, TObject, TString, TTuple,
-  TUnit, TUnknown, Token2, Tuple, TypeAccess, TypeMismatchAB, TypeName, TypeRef,
-  TypeVal, UnboundValue, UnitVal, UnqualifiedImport, UnqualifiedImportType,
-  UnqualifiedImportVal, When,
+  type CompilerState, type Env, type Expr2, type Module, type ModulePath,
+  type RecordConstructor, type Token2, CompilerState, Defun, Env, Expr2,
+  ExternalFun, ListEx, Module, ModulePath, NOP, Name, NativeFun, NativeFunReturn,
+  Object, RecordConstructor, SrcInf, StringVal, TList, TString, TypeVal, UnitVal,
 }
 import gleam_lsp/interpreter/color.{cyan, green, red, yellow}
 
@@ -61,14 +52,10 @@ pub fn env_path(env: Env) {
 
 pub fn list_types(env: Env) -> Unit {
   log("~s types =====================================", [env.name])
-  map.fold(
-    env.types,
-    [],
-    fn(acc, k, v) {
-      log("~p: ~s", [untyped(k), untyped(itype.pcustomtype(v))])
-      []
-    },
-  )
+  map.fold(env.types, [], fn(acc, k, v) {
+    log("~p: ~s", [untyped(k), untyped(itype.pcustomtype(v))])
+    []
+  })
 
   case env.parent {
     None -> None
@@ -78,15 +65,11 @@ pub fn list_types(env: Env) -> Unit {
 
 pub fn list_vars_ex(env: Env) -> Unit {
   log("\n~s vars =====================================", [env.name])
-  map.fold(
-    env.m,
-    [],
-    fn(acc, k, v) {
-      let Expr2(_, SrcInf(line, col, _)) = v
-      log("~s: ~s(~p,~p)", #(k, itype.pformat2(v), line, col))
-      []
-    },
-  )
+  map.fold(env.m, [], fn(acc, k, v) {
+    let Expr2(_, SrcInf(line, col, _)) = v
+    log("~s: ~s(~p,~p)", #(k, itype.pformat2(v), line, col))
+    []
+  })
 
   case env.parent {
     None -> None
@@ -96,14 +79,10 @@ pub fn list_vars_ex(env: Env) -> Unit {
 
 pub fn list_vars(env: Env) -> Unit {
   log("\n~s vars =====================================", [env.name])
-  map.fold(
-    env.m,
-    [],
-    fn(acc, k, v) {
-      log("~s: ~s", [k, itype.pformat2(v)])
-      []
-    },
-  )
+  map.fold(env.m, [], fn(acc, k, v) {
+    log("~s: ~s", [k, itype.pformat2(v)])
+    []
+  })
 
   case env.parent {
     None -> None
@@ -121,14 +100,11 @@ pub fn list_vars2(env: Env) {
 
 pub fn list_vars2_(env: Env) {
   log("\n~s =====================================", [env.name])
-  list.each(
-    map.keys(env.m),
-    fn(k) {
-      let assert Ok(v) = map.get(env.m, k)
+  list.each(map.keys(env.m), fn(k) {
+    let assert Ok(v) = map.get(env.m, k)
 
-      log("~s: ~s", [k, itype.pformat2(v)])
-    },
-  )
+    log("~s: ~s", [k, itype.pformat2(v)])
+  })
 }
 
 pub fn list_types2(env: Env) {
@@ -141,14 +117,10 @@ pub fn list_types2(env: Env) {
 
 pub fn list_types2_(env: Env) {
   log("~s =====================================", [env.name])
-  map.fold(
-    env.types,
-    [],
-    fn(acc, k, v) {
-      log("~p: ~s", [untyped(k), untyped(itype.pcustomtype(v))])
-      []
-    },
-  )
+  map.fold(env.types, [], fn(acc, k, v) {
+    log("~p: ~s", [untyped(k), untyped(itype.pcustomtype(v))])
+    []
+  })
 }
 
 pub fn lookup_type(env: Env, name: Atom) {
@@ -229,12 +201,9 @@ pub fn global_env(cstate: CompilerState) {
     |> map.insert(
       "println",
       Expr2(
-        ExternalFun(
-          t: TString,
-          module: "erlang_ffi",
-          fun: "println",
-          argtype: [TString],
-        ),
+        ExternalFun(t: TString, module: "erlang_ffi", fun: "println", argtype: [
+          TString,
+        ]),
         eofinf(),
       ),
     )
@@ -265,99 +234,90 @@ pub fn global_env(cstate: CompilerState) {
     |> map.insert(
       "list_types",
       Expr2(
-        NativeFun(
-          t: TList(TString),
-          args: [],
-          fun: fn(env: Env, params: List(Expr2)) {
-            list_types(env)
-            NativeFunReturn(env, Expr2(UnitVal, eofinf()))
-          },
-        ),
+        NativeFun(t: TList(TString), args: [], fun: fn(
+          env: Env,
+          params: List(Expr2),
+        ) {
+          list_types(env)
+          NativeFunReturn(env, Expr2(UnitVal, eofinf()))
+        }),
         eofinf(),
       ),
     )
     |> map.insert(
       "list_vars",
       Expr2(
-        NativeFun(
-          t: TList(TString),
-          args: [],
-          fun: fn(env: Env, params: List(Expr2)) {
-            //list_vars(env)
-            list_vars_ex(env)
-            NativeFunReturn(env, Expr2(UnitVal, eofinf()))
-          },
-        ),
+        NativeFun(t: TList(TString), args: [], fun: fn(
+          env: Env,
+          params: List(Expr2),
+        ) {
+          //list_vars(env)
+          list_vars_ex(env)
+          NativeFunReturn(env, Expr2(UnitVal, eofinf()))
+        }),
         eofinf(),
       ),
     )
     |> map.insert(
       "type_of",
       Expr2(
-        NativeFun(
-          t: TList(TString),
-          args: [],
-          fun: fn(env: Env, params: List(Expr2)) {
-            let assert Ok(e) = list.first(params)
-            NativeFunReturn(env, Expr2(TypeVal(itype.get_type2(e)), eofinf()))
-          },
-        ),
+        NativeFun(t: TList(TString), args: [], fun: fn(
+          env: Env,
+          params: List(Expr2),
+        ) {
+          let assert Ok(e) = list.first(params)
+          NativeFunReturn(env, Expr2(TypeVal(itype.get_type2(e)), eofinf()))
+        }),
         eofinf(),
       ),
     )
     |> map.insert(
       "pwd",
       Expr2(
-        NativeFun(
-          t: TList(TString),
-          args: [],
-          fun: fn(env: Env, params: List(Expr2)) {
-            let assert Ok(dir) = erl_file.get_cwd()
-            NativeFunReturn(env, Expr2(StringVal(dir), eofinf()))
-          },
-        ),
+        NativeFun(t: TList(TString), args: [], fun: fn(
+          env: Env,
+          params: List(Expr2),
+        ) {
+          let assert Ok(dir) = erl_file.get_cwd()
+          NativeFunReturn(env, Expr2(StringVal(dir), eofinf()))
+        }),
         eofinf(),
       ),
     )
     |> map.insert(
       "files",
       Expr2(
-        NativeFun(
-          t: TList(TString),
-          args: [],
-          fun: fn(env: Env, params: List(Expr2)) {
-            let assert Ok(files) = erl_file.list_dir("./")
-            NativeFunReturn(
-              env,
-              Expr2(
-                ListEx(
-                  t: TString,
-                  elements: list.map(
-                    files,
-                    fn(f) { Expr2(StringVal(f), eofinf()) },
-                  ),
-                ),
-                eofinf(),
+        NativeFun(t: TList(TString), args: [], fun: fn(
+          env: Env,
+          params: List(Expr2),
+        ) {
+          let assert Ok(files) = erl_file.list_dir("./")
+          NativeFunReturn(
+            env,
+            Expr2(
+              ListEx(
+                t: TString,
+                elements: list.map(files, fn(f) {
+                  Expr2(StringVal(f), eofinf())
+                }),
               ),
-            )
-          },
-        ),
+              eofinf(),
+            ),
+          )
+        }),
         eofinf(),
       ),
     )
     |> map.insert(
       "object",
       Expr2(
-        NativeFun(
-          t: TList(TString),
-          args: [],
-          fun: fn(env: Env, params: List(Expr2)) {
-            NativeFunReturn(
-              env,
-              Expr2(Object(object.new_from_list([])), eofinf()),
-            )
-          },
-        ),
+        NativeFun(t: TList(TString), args: [], fun: fn(
+          env: Env,
+          params: List(Expr2),
+        ) {
+          NativeFunReturn(env, Expr2(Object(object.new_from_list([])), eofinf()),
+          )
+        }),
         eofinf(),
       ),
     )

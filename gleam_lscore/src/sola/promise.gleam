@@ -2,14 +2,14 @@ import otp/timer
 import lib/log.{log}
 import gleam/string
 
-pub external type PromiseException
+pub type PromiseException
 
 //pub external type Promise
 pub type Promise(a) =
   fn() -> Result(a, PromiseException)
 
-pub external fn make_promise(fn() -> res) -> Promise(res) =
-  "erlang_ffi" "make_promise"
+@external(erlang, "erlang_ffi", "make_promise")
+pub fn make_promise(f: fn() -> res) -> Promise(res)
 
 pub fn test() {
   log("PROMISE ---------------------------", [])

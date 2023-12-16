@@ -1,21 +1,21 @@
 import gleam
-import lib/symbol.{Atom, symbol_of}
-import lib/untyped.{Untyped, untyped}
+import lib/symbol.{symbol_of}
+import lib/untyped.{type Untyped, untyped}
 import gleam/list
 import gleam/string
 import otp/erlang.{list_to_binary}
 
-pub external fn format_(fmt: String, param: List(anything)) -> List(Int) =
-  "io_lib" "format"
+@external(erlang, "io_lib", "format")
+pub fn format_(fmt: String, param: List(anything)) -> List(Int)
 
-pub external fn pprintreg_start() -> Untyped =
-  "pprintreg" "start"
+@external(erlang, "pprintreg", "start")
+pub fn pprintreg_start() -> Untyped
 
-pub external fn apply_ppfn(x) -> String =
-  "pprintreg" "apply_ppfn"
+@external(erlang, "pprintreg", "apply_ppfn")
+pub fn apply_ppfn(x: x) -> String
 
-pub external fn register_ppfn(name, func: fn(x) -> String) -> Untyped =
-  "pprintreg" "register_ppfn"
+@external(erlang, "pprintreg", "register_ppfn")
+pub fn register_ppfn(name: name, func: fn(x) -> String) -> Untyped
 
 pub type PPrn(x) {
   Str(gleam.String)
@@ -54,5 +54,5 @@ pub fn register(typename: String, func: fn(x) -> String) {
 }
 
 pub fn format(fmt: String, param: List(anything)) -> String {
-  erlang.list_to_binary(format_(fmt, param))
+  list_to_binary(format_(fmt, param))
 }

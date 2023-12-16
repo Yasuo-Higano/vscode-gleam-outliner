@@ -1,4 +1,4 @@
-pub external type Untyped
+pub type Untyped
 
-pub external fn untyped(x) -> Untyped =
-  "gleam_erlang_ffi" "untyped_of"
+@external(erlang, "gleam_erlang_ffi", "untyped_of")
+pub fn untyped(x: x) -> Untyped

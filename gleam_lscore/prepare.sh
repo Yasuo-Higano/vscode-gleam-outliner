@@ -5,6 +5,7 @@ cd $SCRIPT_DIR
 
 GLEAM=gleam
 
+$GLEAM add gleam_stdlib
 $GLEAM add gleam_erlang
 $GLEAM add gleam_json 
 $GLEAM deps download

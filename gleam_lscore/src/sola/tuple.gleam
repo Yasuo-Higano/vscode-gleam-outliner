@@ -1,16 +1,16 @@
-import otp/erlang.{Tuple}
+import otp/erlang.{type Tuple}
 
-external fn erl_make_tuple(Int, x) -> Tuple =
-  "erlang" "make_tuple"
+@external(erlang, "erlang", "make_tuple")
+pub fn erl_make_tuple(i: Int, x: x) -> Tuple
 
-external fn erl_tuple_size(Tuple) -> Int =
-  "erlang" "tuple_size"
+@external(erlang, "erlang", "tuple_size")
+pub fn erl_tuple_size(t: Tuple) -> Int
 
-external fn erl_tuple_element(Int, Tuple) -> x =
-  "erlang" "element"
+@external(erlang, "erlang", "element")
+pub fn erl_tuple_element(i: Int, t: Tuple) -> x
 
-external fn erl_set_tuple_element(Int, Tuple, val) -> Tuple =
-  "erlang" "setelement"
+@external(erlang, "erlang", "setelement")
+pub fn erl_set_tuple_element(i: Int, t: Tuple, v: val) -> Tuple
 
 pub fn make(n: Int) -> Tuple {
   erl_make_tuple(n, 0)

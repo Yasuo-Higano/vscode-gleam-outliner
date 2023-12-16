@@ -1,51 +1,51 @@
-import gleam/option.{None, Option, Some}
+import gleam/option.{type Option}
 
-pub external type Term
+pub type Term
 
-pub external type Atom
+pub type Atom
 
-pub external type Pid
+pub type Pid
 
-pub external type Tuple
+pub type Tuple
 
 pub type Unit =
   Option(List(Atom))
 
-pub external fn byte_size(str: String) -> Int =
-  "erlang" "byte_size"
+@external(erlang, "erlang", "byte_size")
+fn byte_size(str: String) -> Int
 
-pub external fn string_to_atom(str: String) -> Atom =
-  "erlang" "binary_to_atom"
+@external(erlang, "erlang", "binary_to_atom")
+pub fn string_to_atom(str: String) -> Atom
 
-pub external fn atom_to_string(atom: Atom) -> String =
-  "erlang" "atom_to_binary"
+@external(erlang, "erlang", "atom_to_binary")
+fn atom_to_string(atom: Atom) -> String
 
-pub external fn list_to_binary(str: List(a)) -> String =
-  "erlang" "list_to_binary"
+@external(erlang, "erlang", "list_to_binary")
+pub fn list_to_binary(str: List(a)) -> String
 
-pub external fn tuple_to_list(in: a) -> b =
-  "erlang" "tuple_to_list"
+@external(erlang, "erlang", "tuple_to_list")
+pub fn tuple_to_list(in: a) -> b
 
-pub external fn list_to_tuple(in: a) -> b =
-  "erlang" "list_to_tuple"
+@external(erlang, "erlang", "list_to_tuple")
+pub fn list_to_tuple(in: a) -> b
 
-pub external fn tuple_size(a) -> Int =
-  "erlang" "tuple_size"
+@external(erlang, "erlang", "tuple_size")
+pub fn tuple_size(a: a) -> Int
 
-pub external fn trunc(val: Float) -> Int =
-  "erlang" "trunc"
+@external(erlang, "erlang", "trunc")
+pub fn trunc(val: Float) -> Int
 
-pub external fn float(val: Int) -> Float =
-  "erlang" "float"
+@external(erlang, "erlang", "float")
+pub fn float(val: Int) -> Float
 
-pub external fn apply(module: Atom, f: Atom, args: list_of_term) -> Term =
-  "erlang" "apply"
+@external(erlang, "erlang", "apply")
+pub fn apply(module: Atom, f: Atom, args: list_of_term) -> Term
 
-pub external fn apply_fn(f: fun, args: list_of_term) -> Term =
-  "erlang" "apply"
+@external(erlang, "erlang", "apply")
+pub fn apply_fn(f: fun, args: list_of_term) -> Term
 
-pub external fn spawn(f: fn() -> Unit) -> Pid =
-  "erlang" "spawn"
+@external(erlang, "erlang", "spawn")
+pub fn spawn(f: fn() -> Unit) -> Pid
 
 pub fn atom_of(str: String) -> Atom {
   string_to_atom(str)

@@ -5,6 +5,8 @@ pub type Token {
   Name(name: String)
   UpName(name: String)
   DiscardName(name: String)
+  DecoratorName(name: String)
+  UnknownName(name: String)
   Int(value: String)
   Float(value: String)
   String(value: String)
@@ -64,6 +66,7 @@ pub type Token {
   EqualEqual
   // '=='
   NotEqual
+  Not
   // '!='
   Vbar
   // '|'
@@ -125,4 +128,5 @@ pub type Token {
   QuasiQuote
 
   EOF
+  ERROR
 }

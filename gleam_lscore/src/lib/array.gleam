@@ -1,5 +1,5 @@
 import otp/array as otp_array
-import gleam.{List}
+import gleam
 import lib/log.{log}
 
 pub type Array(t) =

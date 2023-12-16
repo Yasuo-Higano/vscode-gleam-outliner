@@ -2,6 +2,10 @@
 
 This is a VSCode extension for the Gleam language that supports code outlining. The extension allows you to view the structure of your Gleam code in an outline view, making it easier to navigate and understand your code.
 
+## release notes
+- Added support for @external.
+- Improved stability of operation.
+
 ![Example of Outline View](images/screen1.jpg)
 
 ## Requirements
@@ -10,9 +14,9 @@ This extension requires that Erlang be installed on your system, as the extensio
 
 ## Tested Environment
 
-- Intel Mac OS Ventura 13.5.1, Erlang/OTP 26
-- M1 Mac OS Ventura 13.5.1, Erlang/OTP 26
-- Ubuntu 23.04, Erlang/OTP 26
+- Intel Mac OS Sonoma 14.1.2, Erlang/OTP 26, gleam 0.33.0-rc1
+- M1 Mac OS Sonoma 14.1.2, Erlang/OTP 26, gleam 0.33.0-rc1
+- Ubuntu 22.04, Erlang/OTP 26, gleam 0.33.0-rc1
 
 ## Recommended
 
@@ -22,6 +26,10 @@ In addition to VSCode's standard outline view, we also recommend using Outline M
 
 これはGleam言語のVSCode拡張機能で、コードのアウトライン表示をサポートしています。この拡張機能により、Gleamコードの構造をアウトラインビューで確認し、コードの理解やナビゲーションを容易にします。
 
+## release notes
+- gleamの@externalに対応しました。
+- 動作の安定性を向上させました。
+
 ![アウトライン表示の例](images/screen1.jpg)
 
 ## 必要条件
@@ -30,9 +38,9 @@ In addition to VSCode's standard outline view, we also recommend using Outline M
 
 ## 動作確認済み環境
 
-- Intel Mac OS Ventura 13.5.1, Erlang/OTP 26
-- M1 Mac OS Ventura 13.5.1, Erlang/OTP 26
-- Ubuntu 23.04, Erlang/OTP 26
+- Intel Mac OS Sonoma 14.1.2, Erlang/OTP 26, gleam 0.33.0-rc1
+- M1 Mac OS Sonoma 14.1.2, Erlang/OTP 26, gleam 0.33.0-rc1
+- Ubuntu 22.04, Erlang/OTP 26, gleam 0.33.0-rc1
 
 ## おすすめ
 

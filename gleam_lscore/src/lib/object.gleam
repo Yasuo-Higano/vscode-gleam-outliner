@@ -1,36 +1,36 @@
-import lib/untyped.{Untyped}
+import lib/untyped
 import gleam/list
 import gleam
-import otp/erlang.{Atom, Term, apply_fn}
+import otp/erlang.{type Atom}
 import lib/log.{log}
 
 //pub external type Object
 pub type Object =
   Atom
 
-external fn ets_new(name: Atom, options: List(Atom)) -> Object =
-  "ets" "new"
+@external(erlang, "ets", "new")
+fn ets_new(name: Atom, options: List(Atom)) -> Object
 
-external fn insert(tab: Object, obj: a) -> Bool =
-  "ets" "insert"
+@external(erlang, "ets", "insert")
+fn insert(tab: Object, obj: a) -> Bool
 
-external fn insert_list(tab: Object, list: List(a)) -> Bool =
-  "ets" "insert"
+@external(erlang, "ets", "insert")
+fn insert_list(tab: Object, list: List(a)) -> Bool
 
-external fn lookup(tab: Object, key: String) -> List(a) =
-  "ets" "lookup"
+@external(erlang, "ets", "lookup")
+fn lookup(tab: Object, key: String) -> List(a)
 
-external fn foldl(fn(e, a) -> a, a, Object) -> a =
-  "ets" "foldl"
+@external(erlang, "ets", "foldl")
+fn foldl(f: fn(e, a) -> a, a: a, o: Object) -> a
 
-external fn ets_keys(Object) -> List(String) =
-  "erlang_ffi" "ets_keys"
+@external(erlang, "erlang_ffi", "ets_keys")
+fn ets_keys(o: Object) -> List(String)
 
-external fn ets_to_list(Object) -> List(a) =
-  "ets" "tab2list"
+@external(erlang, "ets", "tab2list")
+fn ets_to_list(o: Object) -> List(a)
 
-external fn call_method(method: fun, self: Object, params: listparam) -> a =
-  "erlang_ffi" "call_method"
+@external(erlang, "erlang_ffi", "call_method")
+fn call_method(method: fun, self: Object, params: listparam) -> a
 
 pub type BoxValue {
   Int(gleam.Int)

@@ -1,11 +1,11 @@
-pub external fn read_file(path: String) -> Result(String, reason) =
-  "file" "read_file"
+@external(erlang, "file", "read_file")
+pub fn read_file(path: String) -> Result(String, reason)
 
-pub external fn write_file(path: String, data: String) -> Result(ok, reason) =
-  "file" "write_file"
+@external(erlang, "file", "write_file")
+pub fn write_file(path: String, data: String) -> Result(ok, reason)
 
-pub external fn get_cwd() -> Result(String, reason) =
-  "file" "get_cwd"
+@external(erlang, "file", "get_cwd")
+pub fn get_cwd() -> Result(String, reason)
 
-pub external fn list_dir(dir: String) -> Result(List(String), reason) =
-  "file" "list_dir"
+@external(erlang, "file", "list_dir")
+pub fn list_dir(dir: String) -> Result(List(String), reason)

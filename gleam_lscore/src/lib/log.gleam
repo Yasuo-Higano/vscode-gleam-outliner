@@ -1,14 +1,14 @@
 import gleam/io
 
 //external fn io_format(fmt:String,params:dynamic) -> res = "gleam_erlang_ffi" "log"
-external fn erl_log(fmt: String, params: dynamic) -> res =
-  "erlang_ffi" "log"
+@external(erlang, "erlang_ffi", "log")
+fn erl_log(fmt: String, params: dynamic) -> res
 
-external fn is_tuple(term: dynamic) -> Bool =
-  "erlang" "is_tuple"
+@external(erlang, "erlang", "is_tuple")
+fn is_tuple(term: dynamic) -> Bool
 
-external fn tuple_to_list(term: dynamic) -> List(dyn) =
-  "erlang" "tuple_to_list"
+@external(erlang, "erlang", "tuple_to_list")
+fn tuple_to_list(term: dynamic) -> List(dyn)
 
 pub fn log(fmt: String, params: dynamic) {
   case is_tuple(params) {

@@ -1,12 +1,12 @@
 import lib/log.{log}
 
-external fn pp(a) -> String =
-  "ffi_gleam_pp" "pp"
+@external(erlang, "ffi_gleam_pp", "pp")
+fn pp(a: a) -> String
 
-pub fn pprint(a) {
+pub fn pprint(a: a) {
   pp(a)
 }
 
-pub fn pprint_out(a) {
+pub fn pprint_out(a: a) {
   log("~s", [pp(a)])
 }

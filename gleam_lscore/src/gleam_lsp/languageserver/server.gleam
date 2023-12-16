@@ -1,23 +1,22 @@
-import otp/erlang.{Unit}
+import otp/erlang
 import gleam
-import lib/log.{log}
+import lib/log as liblog
 import gleam/io
 import gleam/list
 import gleam/string
-import gleam/map.{Map}
-import gleam/option.{None, Option, Some}
-//import gleam/json.{array, int, null, object, string}
+import gleam/map.{type Map}
+import gleam/option.{type Option, None, Some}
 import gleam/dynamic
 import sola/exception
 import sola/json.{
-  JFalse, JFloat, JInt, JList, JNull, JObject, JPair, JStr, JTrue, Json,
+  type JPair, type Json, JInt, JList, JNull, JObject, JPair, JStr,
 }
 import gleam_lsp/interpreter/token
 import gleam_lsp/interpreter/lexer
-import gleam_lsp/interpreter/itype.{SrcInf, Token2}
+import gleam_lsp/interpreter/itype.{type Token2}
 import gleam_lsp/interpreter/fuzzy_doc_symbolizer.{
-  Constructor, DefConst, DefExternalFun, DefExternalType, DefType, DefTypeAlias,
-  Defun, DocSymbol, DocSymbol2, ParentWithChildren, Range,
+  type DocSymbol2, Constructor, DefConst, DefExternalFun, DefExternalType,
+  DefType, DefTypeAlias, Defun, DocSymbol2, ParentWithChildren,
 }
 
 type StandardIo {
@@ -55,40 +54,31 @@ pub fn handle_message(pid: Pid, msg: String) -> Option(String) {
   call(pid, msg, 3000)
 }
 
-external fn init_stdio() -> Unit =
-  "erlang_ffi" "init_stdio"
+@external(erlang, "gen_server", "start_link")
+pub fn start_(a: a, b: b, c: c) -> Result(Pid, err)
 
-external fn io_write(device: atom, str: String) -> Unit =
-  "io" "write"
+@external(erlang, "erlang", "binary_to_atom")
+pub fn string_to_atom(str: String) -> Result(Atom, err)
 
-external fn file_read_line(device: atom) -> String =
-  "file" "read_line"
+@external(erlang, "gen_server", "call")
+pub fn call(pid: Pid, msg: dyn, timeout: Int) -> Option(String)
 
-pub external fn format(fmt: String, param: a) -> List(Int) =
-  "io_lib" "format"
+@external(erlang, "gen_server", "cast")
+pub fn cast(pid: Pid, msg: dyn) -> String
 
-pub external fn start_(a, b, c) -> Result(Pid, err) =
-  "gen_server" "start_link"
+pub fn init_module() -> Nil {
+  log("# gleam_lsp:init_module", [])
+}
 
-pub external fn string_to_atom(str: String) -> Result(Atom, err) =
-  "erlang" "binary_to_atom"
-
-pub external fn list_to_binary(str: List(Int)) -> String =
-  "erlang" "list_to_binary"
-
-pub external fn call(pid: Pid, msg: dyn, timeout: Int) -> Option(String) =
-  "gen_server" "call"
-
-pub external fn cast(pid: Pid, msg: dyn) -> String =
-  "gen_server" "cast"
-
-pub external fn tuple_to_list(in: a) -> b =
-  "erlang" "tuple_to_list"
+fn log(msg: String, args: List(dyn)) {
+  liblog.log("# gleam " <> msg, args)
+}
 
 pub fn start_gen_server() -> Result(Pid, err) {
   let global_atom = string_to_atom("global")
   let module_atom = string_to_atom("gleam_lsp@languageserver@server")
   //start_(#(global_atom, module_atom), [], [])
+  log("start_gen_server: ~p", [module_atom])
   start_(module_atom, [], [])
 }
 
@@ -100,13 +90,10 @@ pub fn init(args: dyn) -> Result(State, a) {
 fn make_response(opt_id: Option(Json), msg: List(JPair)) {
   let l1 = [JPair("jsonrpc", JStr("2.0"))]
   let l2 =
-    list.append(
-      l1,
-      case opt_id {
-        Some(id) -> [JPair("id", id)]
-        None -> []
-      },
-    )
+    list.append(l1, case opt_id {
+      Some(id) -> [JPair("id", id)]
+      None -> []
+    })
 
   json.encode(JObject(list.append(l2, msg)))
 }
@@ -156,20 +143,15 @@ fn emit_docsymbol_(e: DocSymbol2, children: Json) -> Json {
   let lobj = [
     JPair("name", JStr(name)),
     JPair("kind", JInt(kind)),
-    JPair(
-      "selectionRange",
-      range(Pos(r.sl, r.sc), Pos(r.sl, r.sc + symbol_len)),
+    JPair("selectionRange", range(Pos(r.sl, r.sc), Pos(r.sl, r.sc + symbol_len)),
     ),
     JPair("range", range(Pos(r.sl, r.sc), Pos(r.el, r.ec))),
   ]
   let lobj2 =
-    list.append(
-      lobj,
-      case children {
-        JList(_) -> [JPair("children", children)]
-        _ -> []
-      },
-    )
+    list.append(lobj, case children {
+      JList(_) -> [JPair("children", children)]
+      _ -> []
+    })
   //log("LOBJ2 = ~p", [lobj2])
   JObject(lobj2)
 }
@@ -184,7 +166,7 @@ fn build_docsym(doc: DocData) {
 
 // https://microsoft.github.io/language-server-protocol/specifications/specification-3-17/#documentSymbol
 fn provide_symbol_information(state: State, opt_id: Option(Json), juri: Json) {
-  log("uri: ~p", [juri])
+  log("provide_symbol_information uri: ~p", [juri])
 
   //  let syminf =
   //    JObject([
@@ -210,7 +192,7 @@ fn provide_symbol_information(state: State, opt_id: Option(Json), juri: Json) {
 }
 
 fn compile(state: State, j_uri: Json, j_text: Json) {
-  log("uri: ~p", [j_uri])
+  log("compile uri: ~p", [j_uri])
   //log("text: ~p", [j_text])
   let assert JStr(uri) = j_uri
   let assert JStr(src) = j_text
@@ -219,6 +201,7 @@ fn compile(state: State, j_uri: Json, j_text: Json) {
     exception.catch_ex(fn() {
       //log("**** LEXER", [])
       let tokens = lexer.parse(src)
+      //log("**** PARSER", [])
       let symbols = fuzzy_doc_symbolizer.parse(tokens)
       //log("**** FUZZY SYMBOLIZER\n~p", [symbols])
       let doc = DocData(src: src, token: tokens, symbol: symbols)
@@ -254,9 +237,8 @@ pub fn handle_call(msg: String, from: Pid, state: State) -> Response {
   // https://microsoft.github.io/language-server-protocol/specifications/specification-3-17/#serverCapabilities
   let #(resp, new_state) = case method {
     "initialize" -> #(
-      Some(make_response(
-        id,
-        [
+      Some(
+        make_response(id, [
           JPair(
             "result",
             JObject([
@@ -269,8 +251,8 @@ pub fn handle_call(msg: String, from: Pid, state: State) -> Response {
               ),
             ]),
           ),
-        ],
-      )),
+        ]),
+      ),
       state,
     )
     "initialized" -> #(None, state)
@@ -285,26 +267,42 @@ pub fn handle_call(msg: String, from: Pid, state: State) -> Response {
       let uri = json.getp(jobj, ["params", "textDocument", "uri"])
       let assert JList(changes) = json.getp(jobj, ["params", "contentChanges"])
       //list.each(changes, fn(e) { compile(state, uri, json.get(e, "text")) })
+      //list.each(changes, fn(e) { log("text = ~ts", [json.get(e, "text")]) })
+      let new_state =
+        list.fold(changes, state, fn(st, e) {
+          //log("text = ~ts", [json.get_nt_p(e, "text")])
+          let #(_, ret_state) = compile(st, uri, JStr(json.get_nt_p(e, "text")))
+          ret_state
+        })
+
       //list.each(changes, fn(e) { log("textDocument/didChanged: ~p", [e]) })
+
+      //log("textDocument/didChanged: ~p", [jobj])
+
+      #(None, new_state)
+    }
+
+    "textDocument/didClose" -> {
       #(None, state)
     }
 
+    //let text = json.getp(jobj, ["params", "textDocument", "text"])
+    //compile(state, uri, text)
     "textDocument/documentSymbol" -> {
       let uri = json.getp(jobj, ["params", "textDocument", "uri"])
       provide_symbol_information(state, id, uri)
     }
 
-    _ -> #(None, state)
+    _ -> {
+      log("unknown message: ~p", [method])
+      #(None, state)
+    }
   }
 
-  //log("reply ~p", [resp])
-  //io.println(format("call:~p | ~p", tuple_to_list(#(msg, state))))
-  //let jobj = json.decode_to_dynamic(msg)
   Reply(resp, new_state)
 }
 
 /// https://microsoft.github.io/language-server-protocol/specifications/specification-3-17/#serverCapabilities 
 pub fn handle_cast(msg: String, state: State) -> Response {
-  //io.println(format("cast:~p | ~p", tuple_to_list(#(msg, state))))
   Noreply(state)
 }

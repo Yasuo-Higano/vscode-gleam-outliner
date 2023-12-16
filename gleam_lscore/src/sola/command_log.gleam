@@ -13,8 +13,8 @@
 // List(Record(inf(timestamp), document))
 import lib/log.{log}
 import gleam/list
-import gleam/option.{None, Option, Some}
-import otp/erlang.{Atom, Pid, Unit, string_to_atom}
+import gleam/option.{None}
+import otp/erlang.{type Pid, type Unit, string_to_atom}
 
 //import gleam.{Tuple}
 pub type Record(data) {
@@ -36,11 +36,11 @@ pub fn get(pid: Pid, record_id: Int) -> Record(data) {
   record
 }
 
-pub external fn start_link_(a, b, c) -> Result(Pid, err) =
-  "gen_server" "start_link"
+@external(erlang, "gen_server", "start_link")
+pub fn start_link_(a: a, b: b, c: c) -> Result(Pid, err)
 
-pub external fn call(pid: Pid, msg: dyn) -> res =
-  "gen_server" "call"
+@external(erlang, "gen_server", "call")
+pub fn call(pid: Pid, msg: dyn) -> res
 
 pub type GenServerResponse(resp, state) {
   Reply(ret: resp, state: state)
@@ -129,11 +129,12 @@ type MyProperty {
 pub fn t1() {
   let property = MyProperty("/aoei.data")
   let plug =
-    Plug(
-      property: property,
-      load: fn(p: MyProperty) { Error("err") },
-      save: fn(p: MyProperty, state: State(MyCommand)) -> Unit { None },
-    )
+    Plug(property: property, load: fn(p: MyProperty) { Error("err") }, save: fn(
+      p: MyProperty,
+      state: State(MyCommand),
+    ) -> Unit {
+      None
+    })
 
   let pid = new(plug)
   append(pid, Record(MyCommand(title: "iititle", body: "Uho IIOTOKO!")))

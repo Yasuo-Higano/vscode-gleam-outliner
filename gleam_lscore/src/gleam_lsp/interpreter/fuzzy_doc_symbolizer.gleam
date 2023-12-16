@@ -2,16 +2,16 @@ import otp/io
 import gleam
 import lib/pprint.{format}
 import gleam_lsp/interpreter/lexer
-import gleam_lsp/interpreter/itype.{SrcInf, Token2}
+import gleam_lsp/interpreter/itype.{type SrcInf, type Token2, SrcInf, Token2}
 import gleam_lsp/interpreter/token
 import lib/log.{log}
 import gleam/string
 import gleam/list
-import gleam/map.{Map}
-import gleam/option.{None, Option, Some}
+import gleam/map
+import gleam/option.{None}
 import gleam/int
 import gleam/float
-import lib/untyped.{Untyped, untyped}
+import lib/untyped.{untyped}
 import sola/exception
 
 fn eofinf() {
@@ -49,26 +49,21 @@ fn read_constructors(src: List(Token2), acc: List(DocSymbol2)) {
     [Token2(token.RightBrace, _) as head, ..tail] -> #(list.reverse(acc), tail)
     [Token2(token.UpName(name), infs), Token2(token.LeftParen, infe), ..tail] -> {
       let #(_, tail2) = skip_to_expr_end(tail, 1)
-      read_constructors(
-        tail2,
-        [
-          DocSymbol2(Constructor(public: False, name: name), range(infs, infe)),
-          ..acc
-        ],
-      )
+      read_constructors(tail2, [
+        DocSymbol2(Constructor(public: False, name: name), range(infs, infe)),
+        ..acc
+      ])
     }
     [Token2(token.UpName(name), infs), Token2(_, infe), ..tail] ->
-      read_constructors(
-        tail,
-        [
-          DocSymbol2(Constructor(public: False, name: name), range(infs, infe)),
-          ..acc
-        ],
-      )
+      read_constructors(tail, [
+        DocSymbol2(Constructor(public: False, name: name), range(infs, infe)),
+        ..acc
+      ])
     [_, ..tail] -> read_constructors(tail, acc)
   }
 }
 
+// skip to )
 fn skip_to_expr_end(src: List(Token2), cnt: Int) {
   case src {
     [Token2(token.LeftParen, _), ..tail] -> skip_to_expr_end(tail, cnt + 1)
@@ -103,6 +98,21 @@ fn skip_to(src: List(Token2), token: token.Token) {
   }
 }
 
+// 関数の戻り値の型を飛ばして、関数本体の { まで飛ばす
+fn skip_to_function_body(src: List(Token2)) -> Result(List(Token2), String) {
+  case src {
+    [Token2(token.Pub, _), ..rest]
+    | [Token2(token.Fn, _), ..rest]
+    | [Token2(token.Type, _), ..rest]
+    | [Token2(token.External, _), ..rest] -> {
+      Error("no function body")
+    }
+
+    [Token2(token.LeftBrace, _), ..tail] -> Ok(src)
+    [_, ..tail] -> skip_to_function_body(tail)
+  }
+}
+
 pub fn read(src: List(Token2)) -> #(DocSymbol2, List(Token2)) {
   let #(public, rest_a) = case src {
     [Token2(token.Pub, pos), ..rest_b] -> #(True, rest_b)
@@ -111,6 +121,27 @@ pub fn read(src: List(Token2)) -> #(DocSymbol2, List(Token2)) {
 
   //log("### ~p] ~p",[untyped(eprev),untyped(rest_a)])
   case rest_a {
+    [] -> #(DocSymbol2(UnknownSymbol, Range(0, 0, 0, 0)), [])
+
+    //    // @external(erlang,"module","function")
+    //    [Token2(token.External, _), Token2(token.LeftParen, _), ..rest] -> {
+    //      let #(Token2(_, _), rest2) = skip_to_expr_end(rest, 1)
+    //      case rest2 {
+    //        // pub fn FUNCTION_NAME(param...)
+    //        [
+    //          Token2(token.Pub, _),
+    //          Token2(token.Fn, infs),
+    //          Token2(token.Name(name), infe),
+    //          ..rest3
+    //        ]
+    //        | // fn FUNCTION_NAME(param...) 
+    //        [Token2(token.Fn, infs), Token2(token.Name(name), infe), ..rest3] -> {
+    //          let #(Token2(_, _), rest4) = skip_to_expr_end(rest3, 1)
+    //          #(DocSymbol2(DefExternalFun(public, name), range(infs, infe)), rest4)
+    //        }
+    //        _ -> read(rest2)
+    //      }
+    //    }
     // const
     [
       Token2(token.Const, _),
@@ -136,8 +167,21 @@ pub fn read(src: List(Token2)) -> #(DocSymbol2, List(Token2)) {
       Token2(token.LeftParen, _),
       ..rest
     ] -> {
-      let #(Token2(_, infe), rest2) = skip_to_block_end(rest, 0)
-      #(DocSymbol2(Defun(public, name), range(infs, infe)), rest2)
+      //let #(Token2(_, infe), rest2) = skip_to_block_end(rest, 0)
+      //#(DocSymbol2(Defun(public, name), range(infs, infe)), rest2)
+
+      // skip arguments 
+      let #(Token2(_, inf_argend), rest) = skip_to_expr_end(rest, 1)
+
+      case skip_to_function_body(rest) {
+        Ok(rest2) -> {
+          let #(Token2(_, infe), rest3) = skip_to_block_end(rest2, 0)
+          #(DocSymbol2(Defun(public, name), range(infs, infe)), rest3)
+        }
+        Error(_) -> {
+          #(DocSymbol2(Defun(public, name), range(infs, inf_argend)), rest)
+        }
+      }
     }
 
     // TypeAlias
@@ -241,9 +285,19 @@ pub fn read(src: List(Token2)) -> #(DocSymbol2, List(Token2)) {
 fn parse_(src: List(Token2), acc: List(DocSymbol2)) {
   case exception.catch_ex(fn() { read(src) }) {
     Ok(#(sym, rest)) ->
-      case rest {
-        [] -> list.reverse([sym, ..acc])
-        _ -> parse_(rest, [sym, ..acc])
+      case sym {
+        DocSymbol2(UnknownSymbol, _) -> {
+          case rest {
+            [] -> list.reverse(acc)
+            _ -> parse_(rest, acc)
+          }
+        }
+        _ -> {
+          case rest {
+            [] -> list.reverse([sym, ..acc])
+            _ -> parse_(rest, [sym, ..acc])
+          }
+        }
       }
     Error(_) -> list.reverse(acc)
   }

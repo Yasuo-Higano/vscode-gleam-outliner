@@ -5,26 +5,23 @@ import gleam_lsp/interpreter/lexer
 import gleam_lsp/interpreter/token
 import lib/log.{log}
 import gleam/string
-import gleam/dynamic.{Dynamic}
+import gleam/dynamic
 import gleam/list
-import gleam/map.{Map}
-import gleam/option.{None, Option, Some}
+import gleam/map
+import gleam/option.{type Option, None, Some}
 import gleam/int
 import gleam/float
-import lib/untyped.{Untyped, untyped}
+import lib/untyped.{untyped}
 import sola/exception
 import gleam_lsp/interpreter/itype.{
-  AtomVal, BinOp, Block, Boolean, Case, CaseClause, Closure, Comment,
-  CompileError, Cond, CondClause, CustomType, DefArg, DefConst, DefCustomType,
-  DefExternalFun, DefExternalType, DefParam, DefTypeAlias, Defun, DiscardName,
-  Env, Expected, Expr, Expr2, ExternalFun, FloatVal, Fun, Funcall, Import,
-  ImportAs, ImportUnqualified, IntVal, Let, ListEx, ListExWithTail,
-  ListTypeUnmatch, MemberAccess, Module, NOP, Name, NativeFun, NativeFunReturn,
-  NativeSigil, Object, RecordConstructor, RecordConstructorArg, RecordUpdate,
-  Sequence, Set, SigilExpr, SrcInf, StringVal, T, TCustomType, TFloat, TInt,
-  TList, TObject, TProxyType, TString, TTuple, TUnit, TUnknown, Token2, Tuple,
-  TypeAccess, TypeMismatchAB, TypeVal, UnboundValue, UnitVal, UnqualifiedImport,
-  UnqualifiedImportType, UnqualifiedImportVal, When,
+  type CaseClause, type CompileError, type CondClause, type DefArg,
+  type DefParam, type Expr2, type RecordConstructor, type RecordConstructorArg,
+  type SrcInf, type T, type Token2, type UnqualifiedImport, BinOp, Boolean,
+  CaseClause, CondClause, DefArg, DefConst, DefCustomType, DefExternalFun,
+  DefExternalType, DefParam, DefTypeAlias, Defun, Expected, Expr2, Fun, Import,
+  ImportAs, ImportUnqualified, NOP, RecordConstructor, RecordConstructorArg,
+  SrcInf, TCustomType, TList, TProxyType, TTuple, TUnknown, Token2, TypeAccess,
+  UnqualifiedImportType, UnqualifiedImportVal,
 }
 
 fn eofinf() {
@@ -386,10 +383,10 @@ pub fn read_cond_clauses(src: List(Token2), acc: List(CondClause)) {
   case rest2 {
     [Token2(token.RArrow, pos), ..rest3] -> {
       let #(thenexpr, rest4) = expr(rest3)
-      read_cond_clauses_(
-        rest4,
-        [CondClause(t: TUnknown, expr: subj, then: thenexpr), ..acc],
-      )
+      read_cond_clauses_(rest4, [
+        CondClause(t: TUnknown, expr: subj, then: thenexpr),
+        ..acc
+      ])
     }
   }
 }
@@ -405,10 +402,7 @@ fn read_if(src: List(Token2), acc: List(CondClause)) {
       let #(else_expr, rest5) = expr(rest4)
       let Expr2(_, inf) = else_expr
       let cond_clause =
-        CondClause(
-          t: TUnknown,
-          expr: Expr2(Boolean(True), inf),
-          then: else_expr,
+        CondClause(t: TUnknown, expr: Expr2(Boolean(True), inf), then: else_expr,
         )
       #(list.reverse([cond_clause, ..acc]), rest5)
     }
@@ -672,17 +666,13 @@ pub fn make_label_to_index(args: List(RecordConstructorArg)) {
   let seq = list.range(2, list.length(args) + 2)
   let zipped: List(#(Int, RecordConstructorArg)) = list.zip(seq, args)
   let mm =
-    list.fold(
-      zipped,
-      map.new(),
-      fn(mm, e: #(Int, RecordConstructorArg)) {
-        let #(idx, rarg) = e
-        case rarg.label {
-          Some(label) -> map.insert(mm, label, idx)
-          None -> mm
-        }
-      },
-    )
+    list.fold(zipped, map.new(), fn(mm, e: #(Int, RecordConstructorArg)) {
+      let #(idx, rarg) = e
+      case rarg.label {
+        Some(label) -> map.insert(mm, label, idx)
+        None -> mm
+      }
+    })
   mm
 }
 
@@ -782,15 +772,15 @@ fn read_unqualified_list(src: List(Token2), acc: List(UnqualifiedImport)) {
       Token2(token.Name(as_name), _),
       ..rest
     ] ->
-      read_unqualified_list_(
-        rest,
-        [UnqualifiedImportVal(name: name, as_name: Some(as_name)), ..acc],
-      )
+      read_unqualified_list_(rest, [
+        UnqualifiedImportVal(name: name, as_name: Some(as_name)),
+        ..acc
+      ])
     [Token2(token.Name(name), _), ..rest] ->
-      read_unqualified_list_(
-        rest,
-        [UnqualifiedImportVal(name: name, as_name: None), ..acc],
-      )
+      read_unqualified_list_(rest, [
+        UnqualifiedImportVal(name: name, as_name: None),
+        ..acc
+      ])
 
     [
       Token2(token.UpName(name), _),
@@ -798,15 +788,15 @@ fn read_unqualified_list(src: List(Token2), acc: List(UnqualifiedImport)) {
       Token2(token.UpName(as_name), _),
       ..rest
     ] ->
-      read_unqualified_list_(
-        rest,
-        [UnqualifiedImportType(name: name, as_name: Some(as_name)), ..acc],
-      )
+      read_unqualified_list_(rest, [
+        UnqualifiedImportType(name: name, as_name: Some(as_name)),
+        ..acc
+      ])
     [Token2(token.UpName(name), _), ..rest] ->
-      read_unqualified_list_(
-        rest,
-        [UnqualifiedImportType(name: name, as_name: None), ..acc],
-      )
+      read_unqualified_list_(rest, [
+        UnqualifiedImportType(name: name, as_name: None),
+        ..acc
+      ])
   }
 }
 
@@ -872,11 +862,7 @@ pub fn factor_(eprev: Expr2, src: List(Token2)) -> #(Expr2, List(Token2)) {
       let #(expr, rest2) = expr(rest)
       #(
         Expr2(
-          DefConst(
-            t: TUnknown,
-            public: public_flag,
-            name: exprname,
-            value: expr,
+          DefConst(t: TUnknown, public: public_flag, name: exprname, value: expr,
           ),
           inf,
         ),
@@ -891,11 +877,7 @@ pub fn factor_(eprev: Expr2, src: List(Token2)) -> #(Expr2, List(Token2)) {
       let Expr2(_, inf) = exprname
       #(
         Expr2(
-          DefConst(
-            t: TUnknown,
-            public: public_flag,
-            name: exprname,
-            value: expr,
+          DefConst(t: TUnknown, public: public_flag, name: exprname, value: expr,
           ),
           inf,
         ),
@@ -924,33 +906,29 @@ pub fn factor_(eprev: Expr2, src: List(Token2)) -> #(Expr2, List(Token2)) {
       Token2(token.LeftParen, _),
       ..rest
     ] ->
-      block(
-        "defun",
-        fnname,
-        fn() {
-          //log("defun ~s",[untyped(fnname)])
-          let #(args, rest2) = read_defargs(rest)
-          let #(rtype, rest4) = case rest2 {
-            [Token2(token.RArrow, _), ..rest3] -> expr(rest3)
-            _ -> #(nopexpr2(), rest2)
-          }
-          let #(expr, rest5) = expr(rest4)
-          //log("defun expr~p",[untyped(expr)])
-          #(
-            Expr2(
-              Defun(
-                t: TUnknown,
-                public: public_flag,
-                name: fnname,
-                args: args,
-                body: expr,
-              ),
-              inf,
+      block("defun", fnname, fn() {
+        //log("defun ~s",[untyped(fnname)])
+        let #(args, rest2) = read_defargs(rest)
+        let #(rtype, rest4) = case rest2 {
+          [Token2(token.RArrow, _), ..rest3] -> expr(rest3)
+          _ -> #(nopexpr2(), rest2)
+        }
+        let #(expr, rest5) = expr(rest4)
+        //log("defun expr~p",[untyped(expr)])
+        #(
+          Expr2(
+            Defun(
+              t: TUnknown,
+              public: public_flag,
+              name: fnname,
+              args: args,
+              body: expr,
             ),
-            rest5,
-          )
-        },
-      )
+            inf,
+          ),
+          rest5,
+        )
+      })
 
     // unnamed fun, unnamed lambda
     [Token2(token.Lambda, inf), Token2(token.LeftParen, _), ..rest]
@@ -1328,9 +1306,7 @@ pub fn factor_(eprev: Expr2, src: List(Token2)) -> #(Expr2, List(Token2)) {
       let #(nameexpr, _) = expr([name])
       //log("ast typeaccess ~p -> ~p", [untyped(name), untyped(nameexpr)])
       #(
-        Expr2(
-          itype.TypeAccess(t: TUnknown, expr: nameexpr, member: member),
-          inf,
+        Expr2(itype.TypeAccess(t: TUnknown, expr: nameexpr, member: member), inf,
         ),
         rest,
       )

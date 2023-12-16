@@ -1,20 +1,20 @@
 import otp/io
-import otp/erlang.{Atom, Term}
+import otp/erlang.{type Atom, type Term}
 import lib/pprint.{format}
-import gleam_lsp/interpreter/token.{Token}
+import gleam_lsp/interpreter/token.{type Token}
 import lib/log.{log}
 import gleam/string
 import gleam/list
-import gleam/map.{Map}
-import gleam/option.{None, Option, Some}
+import gleam/map.{type Map}
+import gleam/option.{type Option, None, Some}
 import gleam/int
 import gleam/float
 import gleam
-import lib/untyped.{Untyped, untyped}
+import lib/untyped.{untyped}
 import sola/exception
 import sola/tuple
-import lib/object.{Object}
-import gleam/dynamic.{Dynamic}
+import lib/object.{type Object}
+import gleam/dynamic.{type Dynamic}
 
 pub type CompilerState {
   CompilerState(ref: Object)
@@ -330,29 +330,26 @@ pub fn pargs(args: List(DefArg)) {
     [] -> ""
     _ -> {
       let [_, ..strlst] =
-        list.map(
-          args,
-          fn(arg) {
-            case arg {
-              DefArg(
-                t: t,
-                name: name,
-                renamed: renamed,
-                default: opt_default_value,
-              ) -> {
-                let typstr = case t {
-                  TUnknown -> ""
-                  _ -> format(":~s", [type_name(t)])
-                }
-                let valstr = case opt_default_value {
-                  Some(val) -> format(" = ~s", [pformat2(val)])
-                  _ -> ""
-                }
-                [", ", format("~s(~s)~s~s", [name, renamed, typstr, valstr])]
+        list.map(args, fn(arg) {
+          case arg {
+            DefArg(
+              t: t,
+              name: name,
+              renamed: renamed,
+              default: opt_default_value,
+            ) -> {
+              let typstr = case t {
+                TUnknown -> ""
+                _ -> format(":~s", [type_name(t)])
               }
+              let valstr = case opt_default_value {
+                Some(val) -> format(" = ~s", [pformat2(val)])
+                _ -> ""
+              }
+              [", ", format("~s(~s)~s~s", [name, renamed, typstr, valstr])]
             }
-          },
-        )
+          }
+        })
         |> list.flatten
       string.concat(strlst)
     }
@@ -448,10 +445,10 @@ pub fn pformat(code: Expr) {
     NativeFun(t: t, args: args, fun: _) ->
       format("native_function(~s) -> ~s", [pargs(args), type_name(t)])
     ExternalFun(t: t, module: module, fun: fun, argtype: argtype) ->
-      format(
-        "external_function (~p) -> ~s",
-        [untyped(argtype), untyped(type_name(t))],
-      )
+      format("external_function (~p) -> ~s", [
+        untyped(argtype),
+        untyped(type_name(t)),
+      ])
     DefExternalFun(
       t: t,
       public: public,
@@ -460,10 +457,11 @@ pub fn pformat(code: Expr) {
       fun: fun,
       argtype: argtype,
     ) ->
-      format(
-        "def_external_function ~s(~p) -> ~s",
-        [untyped(name), untyped(argtype), untyped(type_name(t))],
-      )
+      format("def_external_function ~s(~p) -> ~s", [
+        untyped(name),
+        untyped(argtype),
+        untyped(type_name(t)),
+      ])
     Funcall(t: t, fun: fun, params: params) ->
       //format("~s(~s) -> ~s",[pformat(fun), pparams(params), type_name(t)])
       format("~s(~s) -> ~s", ["fun", pparams(params), type_name(t)])
@@ -482,26 +480,29 @@ pub fn pformat(code: Expr) {
       format("import ~p ~s", [untyped(module), untyped(package)])
 
     ImportAs(module: module, package: package, as_name: as_name) ->
-      format(
-        "import ~p ~s as ~s",
-        [untyped(module), untyped(package), untyped(as_name)],
-      )
+      format("import ~p ~s as ~s", [
+        untyped(module),
+        untyped(package),
+        untyped(as_name),
+      ])
 
     ImportUnqualified(
       module: module,
       package: package,
       unqualified: unqualified,
     ) ->
-      format(
-        "import ~p ~s . { ~p }",
-        [untyped(module), untyped(package), untyped(unqualified)],
-      )
+      format("import ~p ~s . { ~p }", [
+        untyped(module),
+        untyped(package),
+        untyped(unqualified),
+      ])
 
     Defun(t, public, name, args, body) ->
-      format(
-        "defun ~s(~p) -> ~s",
-        [untyped(name), untyped(args), untyped(type_name(t))],
-      )
+      format("defun ~s(~p) -> ~s", [
+        untyped(name),
+        untyped(args),
+        untyped(type_name(t)),
+      ])
     Fun(t: t, name: optname, args: args, body: expr) ->
       case optname {
         Some(name) -> format("fn ~s(~p)", [untyped(name), untyped(args)])
@@ -513,10 +514,7 @@ pub fn pformat(code: Expr) {
       //  "closure (~s) -> ~s\n~p",
       //  [untyped(pargs(args)), untyped(type_name(t)), untyped(expr)],
       //)
-      format(
-        "closure (~s) -> ~s",
-        [untyped(pargs(args)), untyped(type_name(t))],
-      )
+      format("closure (~s) -> ~s", [untyped(pargs(args)), untyped(type_name(t))])
 
     Object(_) -> format("Object", [])
 
@@ -684,17 +682,18 @@ pub fn get_record_type(e: Expr) -> Atom {
   tuple.at(dat, 1)
 }
 
-pub external fn box(val: a) -> Expr =
-  "erlang_ffi" "box"
+@external(erlang, "erlang_ffi", "box")
+pub fn box(val: a) -> Expr
 
-pub external fn unbox(val: Expr) -> Term =
-  "erlang_ffi" "unbox"
+@external(erlang, "erlang_ffi", "unbox")
+pub fn unbox(val: Expr) -> Term
 
 pub fn record_data_to_tuple(rec: erlang.Tuple) -> Expr {
-  Tuple(elements: list.map(
-    list.range(1, tuple.size(rec) + 1),
-    fn(i) { tuple.at(rec, i) },
-  ))
+  Tuple(
+    elements: list.map(list.range(1, tuple.size(rec) + 1), fn(i) {
+      tuple.at(rec, i)
+    }),
+  )
 }
 
 pub fn string_of(e: Expr) {
